@@ -23,7 +23,7 @@ class UI(QMainWindow):
              if (index+1 < self.circuit.len and index - 1 >= 0):
                 result = np.kron(result, self.circuit[index+1])
 
-    def gateDropped(self):
+    def gateDropped(self0):
         self.
 
 app = QApplication(sys.argv)
