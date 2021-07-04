@@ -2,11 +2,10 @@ import sys, csv
 from QLabelClickable import QLabelClickable
 from PyQt5 import QtWidgets
 from PyQt5 import QtGui
-from PyQt5.QtWidgets import (QApplication, QGridLayout, QLabel, QMainWindow, QPushButton,
-QLineEdit, QComboBox, QGroupBox, QTableView, QHeaderView, QHBoxLayout,
-QFormLayout, QVBoxLayout, QDialog, QFileDialog, QAction)
-from PyQt5.QtGui import QIcon, QStandardItem, QStandardItemModel
-from PyQt5.QtCore import QLine, QSize, Qt
+from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
+import gates as gt
 
 class Window(QMainWindow):
     def __init__(self):
@@ -120,18 +119,45 @@ class Window(QMainWindow):
             gateDialog.setWindowIcon(QIcon("./images/icon.jpg"))
             gateDialog.setGeometry(500, 500, 300, 300)
 
-            self.loadGateInfoUI(gate) #Llamada a un método que disponga los elementos UI 
+            # grid = QGridLayout()
+            # name = QLabel("Hola")
+            # grid.addWidget(name,1,0)
+            # gateDialog.setLayout(grid)
+
+
+            self.loadGateInfoUI(gateDialog, gate) #Llamada a un método que disponga los elementos UI 
+            gateDialog.show()
             gateDialog.exec()
     
-    def loadGateInfoUI(self, gate):
-        #data = self.loadGateInfo(gate) #Llamada a un método que nos devuelva la información de la puerta en un diccionario/JSON 
-        vBox1 = QVBoxLayout
-        verticalLytWdgt1 = QtWidgets.QWidget()
-        verticalLytWdgt1.setLayout(vBox1)
+    def loadGateInfoUI(self, dialog, gate):
+        data = self.loadGateData(gate) #Llamada a un método que nos devuelva la información de la puerta en un diccionario/JSON 
+        gridInfo = QGridLayout()
+        gridInfo.setColumnStretch(0,2)
+        gridInfo.setColumnStretch(1,8)
         
-        vBox1.addWidget(QLabel(data.get("name")))
+        gridInfo.addWidget(QLabel("Nombre"),1,0)
+        gridInfo.addWidget(QLabel("Icono"),2,0)
+        gridInfo.addWidget(QLabel("Matriz"),3,0)
+
+        gridInfo.addWidget(QLabel(data.get("name")),1,1)
+        gatePixmap = QPixmap(data.get("symbol"))
+        gateIcon = QLabel(self)
+        gateIcon.setScaledContents(True)
+        gridInfo.addWidget(gateIcon.setPixmap(gatePixmap),2,1)
+        #gridInfo.addWidget(QLabel(data.get("matrix")),3,1)
+
+        dialog.setLayout(gridInfo)
+        #vBox1.addWidget(QLabel(data.get("name"))) TODO de los datos obtenidos obtenemos el nombre, la matrix,etc
+
+
+    def loadGateData(self, gate):
+        gate = gate.lower()
+        data = gt.gates.get('x')
+        return data
 
 if __name__ == '__main__':
  app = QApplication(sys.argv)
  window = Window()
  sys.exit(app.exec_())
+
+ 
