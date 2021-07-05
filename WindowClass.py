@@ -1,4 +1,6 @@
 import sys, csv
+
+import numpy as np
 from QLabelClickable import QLabelClickable
 from PyQt5 import QtWidgets
 from PyQt5 import QtGui
@@ -141,10 +143,11 @@ class Window(QMainWindow):
 
         gridInfo.addWidget(QLabel(data.get("name")),1,1)
         gatePixmap = QPixmap(data.get("symbol"))
-        gateIcon = QLabel(self)
+        
+        gateIcon = QLabel("Hola")
         gateIcon.setScaledContents(True)
         gridInfo.addWidget(gateIcon.setPixmap(gatePixmap),2,1)
-        #gridInfo.addWidget(QLabel(data.get("matrix")),3,1)
+        gridInfo.addWidget(QLabel(np.array2string(data.get("matrix"))),3,1)
 
         dialog.setLayout(gridInfo)
         #vBox1.addWidget(QLabel(data.get("name"))) TODO de los datos obtenidos obtenemos el nombre, la matrix,etc
