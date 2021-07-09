@@ -66,18 +66,8 @@ class Window(QMainWindow):
         hbox1.addWidget(gatesGroupBox)
         gridGates = QGridLayout()
         gatesGroupBox.setLayout(gridGates)
-        gateH = QLabelClickable('H')
-        gateH.setFrameShape(QtWidgets.QFrame.Box)
-        gateH.setMaximumSize(50,50)
-        gateH.setAlignment(Qt.AlignCenter)
 
-        #Añadir puertas al grid
-        gridGates.addWidget(gateH,1,1)
-        gridGates.addWidget(QLabel("2"),1,2)
-        gridGates.addWidget(QLabel("3"),2,1)
-        gridGates.addWidget(QLabel("4"),2,2)
-
-        gateH.clicked.connect(lambda:self.openGate("hadamard"))
+        self.fillGridGates(gridGates)
 
         vBox2 = QVBoxLayout()
         verticalLytWdgt2 = QtWidgets.QWidget()
@@ -113,26 +103,63 @@ class Window(QMainWindow):
         #vBox1.addWidget(self, horizontalLytWdgt1)
 '''
     
+    def fillGridGates(self, grid):
+        gateX = self.generateGateLabel('X')
+        gateY = self.generateGateLabel('Y')
+        gateZ = self.generateGateLabel('Z')
+        gateH = self.generateGateLabel('H')
+        gateCX = self.generateGateLabel('CX')
+        gateID = self.generateGateLabel('ID')
+
+
+        #Añadir puertas al grid
+        grid.addWidget(gateX,1,1)
+        grid.addWidget(gateY,1,2)
+        grid.addWidget(gateZ,2,1)
+        grid.addWidget(gateH,2,2)
+        grid.addWidget(gateCX,3,1)
+        grid.addWidget(gateID,3,2)
+
+        gateX.clicked.connect(lambda:self.openGate('x'))
+        gateY.clicked.connect(lambda:self.openGate('y'))
+        gateZ.clicked.connect(lambda:self.openGate('z'))
+        gateH.clicked.connect(lambda:self.openGate('h'))
+        gateCX.clicked.connect(lambda:self.openGate('cx'))
+        gateID.clicked.connect(lambda:self.openGate('id'))
+
+    def generateGateLabel(self, gate):
+        gateH = QLabelClickable(gate)
+        gateH.setFrameShape(QtWidgets.QFrame.Box)
+        gateH.setMaximumSize(50,50)
+        gateH.setAlignment(Qt.AlignCenter)
+        return gateH
+
     def openGate(self, gate):
-        if(gate == 'hadamard'): 
-            gateDialog = QDialog()
-            gateDialog.setModal(True)
-            gateDialog.setWindowTitle("Quantum Simulator")
-            gateDialog.setWindowIcon(QIcon("./images/icon.jpg"))
-            gateDialog.setGeometry(500, 500, 300, 300)
+        gateDialog = QDialog()
+        gateDialog.setModal(True)
+        gateDialog.setWindowTitle("Quantum Simulator")
+        gateDialog.setWindowIcon(QIcon("./images/icon.jpg"))
+        gateDialog.setGeometry(500, 500, 300, 300)
 
-            # grid = QGridLayout()
-            # name = QLabel("Hola")
-            # grid.addWidget(name,1,0)
-            # gateDialog.setLayout(grid)
+        # grid = QGridLayout()
+        # name = QLabel("Hola")
+        # grid.addWidget(name,1,0)
+        # gateDialog.setLayout(grid)
 
 
-            self.loadGateInfoUI(gateDialog, gate) #Llamada a un método que disponga los elementos UI 
-            gateDialog.show()
-            gateDialog.exec()
+        self.loadGateInfoUI(gateDialog, gate) #Llamada a un método que disponga los elementos UI 
+        gateDialog.show()
+        gateDialog.exec()
     
     def loadGateInfoUI(self, dialog, gate):
-        data = self.loadGateData(gate) #Llamada a un método que nos devuelva la información de la puerta en un diccionario/JSON 
+        data = self.loadGateData(gate) #Llamada a un método que nos devuelva la información de la puerta en un diccionario
+        vBox = QVBoxLayout()
+        # titulo = QLabel("Información de la puerta cuántica")
+        # titulo.alignment(Qt.Alignment())
+        vBox.addWidget(QLabel("Información de la puerta cuántica"), alignment=Qt.AlignCenter)
+        
+        #vBox.setStretch(1,100)
+        
         gridInfo = QGridLayout()
         gridInfo.setColumnStretch(0,2)
         gridInfo.setColumnStretch(1,8)
@@ -147,15 +174,17 @@ class Window(QMainWindow):
         gateIcon = QLabel("Hola")
         gateIcon.setScaledContents(True)
         gridInfo.addWidget(gateIcon.setPixmap(gatePixmap),2,1)
+        #gridInfo.addWidget(self.generateGateLabel(data.get('id').upper()),2,1)
         gridInfo.addWidget(QLabel(np.array2string(data.get("matrix"))),3,1)
-
-        dialog.setLayout(gridInfo)
+        vBox.addLayout(gridInfo)
+        vBox.setStretch(1,1)
+        dialog.setLayout(vBox)
         #vBox1.addWidget(QLabel(data.get("name"))) TODO de los datos obtenidos obtenemos el nombre, la matrix,etc
 
 
     def loadGateData(self, gate):
         gate = gate.lower()
-        data = gt.gates.get('x')
+        data = gt.gates.get(gate)
         return data
 
 if __name__ == '__main__':
