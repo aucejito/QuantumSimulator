@@ -154,8 +154,6 @@ class Window(QMainWindow):
     def loadGateInfoUI(self, dialog, gate):
         data = self.loadGateData(gate) #Llamada a un método que nos devuelva la información de la puerta en un diccionario
         vBox = QVBoxLayout()
-        # titulo = QLabel("Información de la puerta cuántica")
-        # titulo.alignment(Qt.Alignment())
         vBox.addWidget(QLabel("Información de la puerta cuántica"), alignment=Qt.AlignCenter)
         
         #vBox.setStretch(1,100)
@@ -173,8 +171,8 @@ class Window(QMainWindow):
         
         gateIcon = QLabel("Hola")
         gateIcon.setScaledContents(True)
-        gridInfo.addWidget(gateIcon.setPixmap(gatePixmap),2,1)
-        #gridInfo.addWidget(self.generateGateLabel(data.get('id').upper()),2,1)
+        #gridInfo.addWidget(gateIcon.setPixmap(gatePixmap),2,1)
+        gridInfo.addWidget(self.generateGateLabel(data.get('id').upper()),2,1)
         gridInfo.addWidget(QLabel(np.array2string(data.get("matrix"))),3,1)
         vBox.addLayout(gridInfo)
         vBox.setStretch(1,1)
