@@ -1,3 +1,4 @@
+from QbitLine import QbitLine
 import sys, csv
 
 import numpy as np
@@ -75,12 +76,8 @@ class Window(QMainWindow):
         hbox1.addWidget(verticalLytWdgt2)
         hbox1.setStretch(0,1)
         hbox1.setStretch(1,5)
-        line1 = QtWidgets.QFrame()
-        line1.setAcceptDrops(True)
-        line1.setFrameShape(QtWidgets.QFrame.HLine)
-        line2 = QtWidgets.QFrame()
-        line2.setAcceptDrops(True)
-        line2.setFrameShape(QtWidgets.QFrame.HLine)
+        line1 = QbitLine()
+        line2 = QbitLine()
         vBox2.addWidget(line1)
         vBox2.addWidget(line2)
 
@@ -120,12 +117,12 @@ class Window(QMainWindow):
         grid.addWidget(gateCX,3,1)
         grid.addWidget(gateID,3,2)
 
-        gateX.clicked.connect(lambda:self.openGate('x'))
-        gateY.clicked.connect(lambda:self.openGate('y'))
-        gateZ.clicked.connect(lambda:self.openGate('z'))
-        gateH.clicked.connect(lambda:self.openGate('h'))
-        gateCX.clicked.connect(lambda:self.openGate('cx'))
-        gateID.clicked.connect(lambda:self.openGate('id'))
+        # gateX.clicked.connect(lambda:self.openGate('x'))
+        # gateY.clicked.connect(lambda:self.openGate('y'))
+        # gateZ.clicked.connect(lambda:self.openGate('z'))
+        # gateH.clicked.connect(lambda:self.openGate('h'))
+        # gateCX.clicked.connect(lambda:self.openGate('cx'))
+        # gateID.clicked.connect(lambda:self.openGate('id'))
 
     def generateGateLabel(self, gate):
         gateH = QLabelClickable(gate)
