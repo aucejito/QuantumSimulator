@@ -1,3 +1,4 @@
+from PyQt5 import QtCore
 from QbitLine import QbitLine
 import sys, csv
 
@@ -11,6 +12,9 @@ from PyQt5.QtCore import *
 import gates as gt
 
 class Window(QMainWindow):
+
+    imagePath = './images/'
+
     def __init__(self):
         super().__init__()
         self.initializeUI()
@@ -117,19 +121,24 @@ class Window(QMainWindow):
         grid.addWidget(gateCX,3,1)
         grid.addWidget(gateID,3,2)
 
+
         # gateX.clicked.connect(lambda:self.openGate('x'))
-        # gateY.clicked.connect(lambda:self.openGate('y'))
+        # gateY.clicked.connecst(lambda:self.openGate('y'))
         # gateZ.clicked.connect(lambda:self.openGate('z'))
         # gateH.clicked.connect(lambda:self.openGate('h'))
         # gateCX.clicked.connect(lambda:self.openGate('cx'))
         # gateID.clicked.connect(lambda:self.openGate('id'))
 
     def generateGateLabel(self, gate):
-        gateH = QLabelClickable(gate)
-        gateH.setFrameShape(QtWidgets.QFrame.Box)
-        gateH.setMaximumSize(50,50)
-        gateH.setAlignment(Qt.AlignCenter)
-        return gateH
+        gateLabel = QLabelClickable(gate)
+        imagePath = './images/'
+        fullpath = imagePath + gate + '.jpg'
+        pixmap = QPixmap(fullpath)
+        gateLabel.setScaledContents(True)
+        gateLabel.setPixmap(pixmap)
+        gateLabel.setMaximumSize(50,50)
+        gateLabel.setAlignment(Qt.AlignCenter)
+        return gateLabel
 
     def openGate(self, gate):
         gateDialog = QDialog()

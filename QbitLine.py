@@ -13,11 +13,12 @@ class QbitLine(QFrame):
         self.setAcceptDrops(True)
 
     def dragEnterEvent(self, event):
-        if event.mimeData().hasText():
+        if event.mimeData().hasImage():
             event.acceptProposedAction()
 
     def dropEvent(self, event):
         pos = event.pos()
         text = event.mimeData().text()
-        self.setText(text)
         event.acceptProposedAction()
+        if event.mimeData().hasImage():
+            self.setPixmap(QPixmap.fromImage(QImage(event.mimeData().imageData())))

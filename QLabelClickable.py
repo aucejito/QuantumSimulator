@@ -10,8 +10,8 @@ class QLabelClickable(QLabel):
     
     # clicked = pyqtSignal()
 
-    # def __init__(self, *args):
-    #     QLabel.__init__(self, *args)
+    def __init__(self, *args):
+        QLabel.__init__(self, *args)
 
     # def mouseReleaseEvent(self, ev):
     #     self.clicked.emit()
@@ -27,7 +27,7 @@ class QLabelClickable(QLabel):
             return
         drag = QDrag(self)
         mimedata = QMimeData()
-        mimedata.setText(self.text())
+        mimedata.setImageData
         drag.setMimeData(mimedata)
         pixmap = QPixmap(self.size())
         painter = QPainter(pixmap)
