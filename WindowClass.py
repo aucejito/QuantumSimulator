@@ -1,3 +1,4 @@
+from GateGroupBox import GateGroupBox
 from PyQt5 import QtCore
 from QbitLine import QbitLine
 import sys, csv
@@ -67,10 +68,32 @@ class Window(QMainWindow):
         hbox1 = QHBoxLayout()
         horizontalLytWdgt1.setLayout(hbox1)
 
-        gatesGroupBox = QGroupBox("Puertas")
-        hbox1.addWidget(gatesGroupBox)
+        gatesGroupBox = GateGroupBox("Puertas")
+        vboxGatesLyt = QVBoxLayout()
+        vboxGatesWdgt = QWidget()
+        hbox1.addWidget(vboxGatesWdgt)
+        vboxGatesLyt.addWidget(gatesGroupBox)
         gridGates = QGridLayout()
+
+        deleteGates = QWidget()
+        deleteGates.setAcceptDrops(True)
+        deleteGates.setStyleSheet('background-color: rgba(255, 0, 0, 0.5)')
+        vBoxDelGates = QVBoxLayout()
+        vBoxDelGates.setAlignment(Qt.AlignCenter)
+        trashIcon = QLabel()
+        trashIcon.setStyleSheet('background-color: rgba(255, 0, 0, 0)')
+        trashIcon.setPixmap(QPixmap("./images/trash.png"))
+        trashIcon.setAlignment(Qt.AlignCenter)
+        trashIcon.setMaximumSize(60,60)
+        trashIcon.setScaledContents(True)
+        trashIcon.setAcceptDrops(True)
+        vBoxDelGates.addWidget(trashIcon)
+        deleteGates.setLayout(vBoxDelGates)
+        vboxGatesLyt.addWidget(deleteGates)
         gatesGroupBox.setLayout(gridGates)
+        vboxGatesWdgt.setLayout(vboxGatesLyt)
+        vboxGatesLyt.setStretch(0,5)
+        vboxGatesLyt.setStretch(1,1)
 
         self.fillGridGates(gridGates)
 
@@ -84,6 +107,8 @@ class Window(QMainWindow):
         line2 = QbitLine()
         vBox2.addWidget(line1)
         vBox2.addWidget(line2)
+        vBox1.setStretch(0,1)
+        vBox1.setStretch(1,1)
 
 
         '''
@@ -122,12 +147,12 @@ class Window(QMainWindow):
         grid.addWidget(gateID,3,2)
 
 
-        # gateX.clicked.connect(lambda:self.openGate('x'))
-        # gateY.clicked.connecst(lambda:self.openGate('y'))
-        # gateZ.clicked.connect(lambda:self.openGate('z'))
-        # gateH.clicked.connect(lambda:self.openGate('h'))
-        # gateCX.clicked.connect(lambda:self.openGate('cx'))
-        # gateID.clicked.connect(lambda:self.openGate('id'))
+        gateX.clicked.connect(lambda:self.openGate('x'))
+        gateY.clicked.connect(lambda:self.openGate('y'))
+        gateZ.clicked.connect(lambda:self.openGate('z'))
+        gateH.clicked.connect(lambda:self.openGate('h'))
+        gateCX.clicked.connect(lambda:self.openGate('cx'))
+        gateID.clicked.connect(lambda:self.openGate('id'))
 
     def generateGateLabel(self, gate):
         gateLabel = QLabelClickable(gate)

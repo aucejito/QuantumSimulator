@@ -8,13 +8,13 @@ from PyQt5.QtCore import *
 
 class QLabelClickable(QLabel):
     
-    # clicked = pyqtSignal()
+    clicked = pyqtSignal()
 
     def __init__(self, *args):
         QLabel.__init__(self, *args)
-
-    # def mouseReleaseEvent(self, ev):
-    #     self.clicked.emit()
+        
+    def mouseReleaseEvent(self, ev):
+        self.clicked.emit()
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
@@ -27,7 +27,7 @@ class QLabelClickable(QLabel):
             return
         drag = QDrag(self)
         mimedata = QMimeData()
-        mimedata.setImageData
+        mimedata.setImageData(self.pixmap().toImage())
         drag.setMimeData(mimedata)
         pixmap = QPixmap(self.size())
         painter = QPainter(pixmap)
