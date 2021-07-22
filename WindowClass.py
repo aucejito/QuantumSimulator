@@ -1,12 +1,12 @@
 from GateGroupBox import GateGroupBox
 from PyQt5 import QtCore
 from QbitLine import QbitLine
+from Circuit import Circuit
 import sys, csv
+from PyQt5.QtChart import QChart, QChartView, QBarSet, QPercentBarSeries, QBarCategoryAxis
 
 import numpy as np
 from QLabelClickable import QLabelClickable
-from PyQt5 import QtWidgets
-from PyQt5 import QtGui
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
@@ -50,11 +50,11 @@ class Window(QMainWindow):
         
 
     def setupUI(self):
-        verticalLytWdgt1 = QtWidgets.QWidget()
+        verticalLytWdgt1 = QWidget()
         simulateButton = QPushButton(QIcon("images/play.png"), "Simular")
         
         '''Conexión al método de simulación'''
-        #simulateButton.clicked.connect(self.startSimulation)
+        simulateButton.clicked.connect(self.startSimulation)
 
         vBox1 = QVBoxLayout()
         vBox1.addWidget(simulateButton)
@@ -62,7 +62,7 @@ class Window(QMainWindow):
         self.setCentralWidget(verticalLytWdgt1)
         
 
-        horizontalLytWdgt1 = QtWidgets.QWidget()
+        horizontalLytWdgt1 = QWidget()
         vBox1.addWidget(horizontalLytWdgt1)
         
         hbox1 = QHBoxLayout()
@@ -98,7 +98,7 @@ class Window(QMainWindow):
         self.fillGridGates(gridGates)
 
         vBox2 = QVBoxLayout()
-        verticalLytWdgt2 = QtWidgets.QWidget()
+        verticalLytWdgt2 = QWidget()
         verticalLytWdgt2.setLayout(vBox2)
         hbox1.addWidget(verticalLytWdgt2)
         hbox1.setStretch(0,1)
@@ -172,12 +172,6 @@ class Window(QMainWindow):
         gateDialog.setWindowIcon(QIcon("./images/icon.jpg"))
         gateDialog.setGeometry(500, 500, 300, 300)
 
-        # grid = QGridLayout()
-        # name = QLabel("Hola")
-        # grid.addWidget(name,1,0)
-        # gateDialog.setLayout(grid)
-
-
         self.loadGateInfoUI(gateDialog, gate) #Llamada a un método que disponga los elementos UI 
         gateDialog.show()
         gateDialog.exec()
@@ -210,11 +204,78 @@ class Window(QMainWindow):
         dialog.setLayout(vBox)
         #vBox1.addWidget(QLabel(data.get("name"))) TODO de los datos obtenidos obtenemos el nombre, la matrix,etc
 
+    def startSimulation(self):
+        matrices = self.getAllMatrices()
+        #TODO Crear circuito y cálculo
+        currentCircuit = Circuit()
+        matrix = self.loadGateData('h')
+        matrix = matrix.get("matrix")
+        currentCircuit.addGate(matrix)
+        
+
+
+        self.openResultDialog()
+        
+        
+    def getAllMatrices(self):
+        gates = gt.gates.values()
+        matrices = []
+        for gate in gates:
+            matrices.append(gate.get('matrix'))
+        
+        return matrices
 
     def loadGateData(self, gate):
         gate = gate.lower()
         data = gt.gates.get(gate)
         return data
+
+    def openResultDialog(self):
+        resultDialog = QDialog()
+        resultDialog.setModal(True)
+        resultDialog.setWindowTitle("Quantum Simulator")
+        resultDialog.setWindowIcon(QIcon("./images/icon.jpg"))
+        resultDialog.setGeometry(500, 500, 800, 500)
+
+        self.loadResultUI(resultDialog) #Llamada a un método que disponga los elementos UI 
+        resultDialog.show()
+        resultDialog.exec()
+
+    def loadResultUI(self, resultDialog : QDialog):
+        
+        
+        set0 = QBarSet("0")
+        set1 = QBarSet("1")
+
+        set0 << 2
+
+        series = QPercentBarSeries()
+        series.append(set0)
+
+        chart = QChart()
+        chart.addSeries(series)
+        chart.setTitle("Histograma")
+        chart.setAnimationOptions(QChart.SeriesAnimations)
+
+        categories = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"]
+        axis = QBarCategoryAxis()
+        axis.append(categories)
+        chart.createDefaultAxes()
+        chart.setAxisX(axis, series)
+
+        chart.legend().setVisible(True)
+        chart.legend().setAlignment(Qt.AlignBottom)
+
+        chartView = QChartView(chart)
+        chartView.setRenderHint(QPainter.Antialiasing)
+
+        layout = QHBoxLayout()
+        layout.addWidget(chartView)
+        resultDialog.setLayout(layout)
+
+
+
+
 
 if __name__ == '__main__':
  app = QApplication(sys.argv)

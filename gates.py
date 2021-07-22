@@ -21,7 +21,7 @@ gates = {
     },
     'h': {
         "id":"h",
-        "name":"Pauli-H",
+        "name":"Hadamard",
         "symbol":"./images/H.jpg",
         "matrix": 1/np.sqrt(2)*np.array([[1,1],[1,-1]])
     },
@@ -37,4 +37,16 @@ gates = {
         "symbol":"./images/ID.jpg",
         "matrix": np.array([[1,0],[0,1]])
     },
+    'one':{
+        "id":"one",
+        "name":"Constant-One",
+        "symbol":".",
+        "matrix": np.array([0,1])
+    },
+    'zero':{
+        "id":"zero",
+        "name":"Constant-Zero",
+        "symbol":".",
+        "matrix": np.array([1,0])
+    }
 }
