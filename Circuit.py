@@ -1,12 +1,12 @@
 import numpy as np
 
 class Circuit():
-    __initialState = None
+    initialState = None
     __states = []
     __gates = []
 
     def __init__(self) -> None:
-        self.__initialState = np.array([1,0])
+        self.initialState = np.array([1,0])
 
     def addGate(self, gate):
         self.__gates.append(gate)

@@ -210,10 +210,20 @@ class Window(QMainWindow):
         currentCircuit = Circuit()
         matrix = self.loadGateData('h')
         matrix = matrix.get("matrix")
+        print(matrix)
         currentCircuit.addGate(matrix)
         
+        currentCircuit.__init__
+        res : np.ndarray = np.matmul(matrix, currentCircuit.initialState)
+        res.tolist()
+        print(res)
+        density = []
+        i = 0 
+        while i < len(res):
+            density.append(res[i] / sum(res))
+            i+=1
 
-
+        print(density)
         self.openResultDialog()
         
         
@@ -241,16 +251,18 @@ class Window(QMainWindow):
         resultDialog.show()
         resultDialog.exec()
 
-    def loadResultUI(self, resultDialog : QDialog):
+    def loadResultUI(self, resultDialog : QDialog, results):
         
         
         set0 = QBarSet("0")
         set1 = QBarSet("1")
 
-        set0 << 2
+        set0 << 0.5
+        set1 << 0.5
 
         series = QPercentBarSeries()
         series.append(set0)
+        series.append(set1)
 
         chart = QChart()
         chart.addSeries(series)

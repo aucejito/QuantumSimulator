@@ -20,11 +20,14 @@ class QLabelClickable(QLabel):
         if event.button() == Qt.LeftButton:
             self.drag_start_position = event.pos()
 
-    def mouseMoveEvent(self, event):
+    def mouseMoveEvent(self, event : QtGui.QMouseEvent):
         if not (event.buttons() & Qt.LeftButton):
             return
         if (event.pos() - self.drag_start_position).manhattanLength() < QApplication.startDragDistance():
             return
+        item = event.source()
+        if(item.isAncestorOf(self)):
+            event.ignore()
         drag = QDrag(self)
         mimedata = QMimeData()
         mimedata.setImageData(self.pixmap().toImage())
