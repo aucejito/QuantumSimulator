@@ -1,16 +1,18 @@
+from Util import Util
+from Simulation import Simulation as sim
 from GateGroupBox import GateGroupBox
 from PyQt5 import QtCore
 from QbitLine import QbitLine
 from Circuit import Circuit
+import pyqtgraph as pg
 import sys, csv
-from PyQt5.QtChart import QChart, QChartView, QBarSet, QPercentBarSeries, QBarCategoryAxis
-
 import numpy as np
 from QLabelClickable import QLabelClickable
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 import gates as gt
+
 
 class Window(QMainWindow):
 
@@ -177,7 +179,7 @@ class Window(QMainWindow):
         gateDialog.exec()
     
     def loadGateInfoUI(self, dialog, gate):
-        data = self.loadGateData(gate) #Llamada a un método que nos devuelva la información de la puerta en un diccionario
+        data = Util.loadGateData(gate) #Llamada a un método que nos devuelva la información de la puerta en un diccionario
         vBox = QVBoxLayout()
         vBox.addWidget(QLabel("Información de la puerta cuántica"), alignment=Qt.AlignCenter)
         
@@ -207,16 +209,16 @@ class Window(QMainWindow):
     def startSimulation(self):
         matrices = self.getAllMatrices()
         #TODO Crear circuito y cálculo
-        currentCircuit = Circuit()
-        matrix = self.loadGateData('h')
-        matrix = matrix.get("matrix")
-        print(matrix)
-        currentCircuit.addGate(matrix)
+        '''
+        matrix = self.loadGateData('h').get("matrix")
+        # print(matrix)
         
+        currentCircuit = Circuit()
+        currentCircuit.addGate(matrix)
         currentCircuit.__init__
+
         res : np.ndarray = np.matmul(matrix, currentCircuit.initialState)
         res.tolist()
-        print(res)
         density = []
         i = 0 
         while i < len(res):
@@ -224,7 +226,11 @@ class Window(QMainWindow):
             i+=1
 
         print(density)
-        self.openResultDialog()
+        '''
+        
+        currCircuit = Circuit()
+        results = sim.simulate(currCircuit, 5)
+        self.openResultDialog(results)
         
         
     def getAllMatrices(self):
@@ -240,49 +246,36 @@ class Window(QMainWindow):
         data = gt.gates.get(gate)
         return data
 
-    def openResultDialog(self):
+    def openResultDialog(self, results):
         resultDialog = QDialog()
         resultDialog.setModal(True)
         resultDialog.setWindowTitle("Quantum Simulator")
         resultDialog.setWindowIcon(QIcon("./images/icon.jpg"))
         resultDialog.setGeometry(500, 500, 800, 500)
 
-        self.loadResultUI(resultDialog) #Llamada a un método que disponga los elementos UI 
+        self.loadResultUI(resultDialog, results) #Llamada a un método que disponga los elementos UI 
         resultDialog.show()
         resultDialog.exec()
 
     def loadResultUI(self, resultDialog : QDialog, results):
         
+        resultWindow = pg.plot()
+        resultWindow.getPlotItem().getAxis('bottom').setTicks([[(1,'one'),(2,'two')]])
+        qbits = 2 #results.get('qbits')
+        xAxis = []
+        for i in range(pow(2,qbits)):
+            state = bin(i)[2:]
+            if len(state) < qbits:
+                state = state.zfill(2)
+            xAxis.append(state)
+        xdict = dict(enumerate(xAxis))
+        resultWindow.getPlotItem().getAxis('bottom').setTicks([xdict.items()])
+        probabilities = [0,0, 0.5, 0.5]
+        bargraph = pg.BarGraphItem(x=range(pow(2,qbits)), height = probabilities, width = 0.6, brush ='g')
         
-        set0 = QBarSet("0")
-        set1 = QBarSet("1")
-
-        set0 << 0.5
-        set1 << 0.5
-
-        series = QPercentBarSeries()
-        series.append(set0)
-        series.append(set1)
-
-        chart = QChart()
-        chart.addSeries(series)
-        chart.setTitle("Histograma")
-        chart.setAnimationOptions(QChart.SeriesAnimations)
-
-        categories = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"]
-        axis = QBarCategoryAxis()
-        axis.append(categories)
-        chart.createDefaultAxes()
-        chart.setAxisX(axis, series)
-
-        chart.legend().setVisible(True)
-        chart.legend().setAlignment(Qt.AlignBottom)
-
-        chartView = QChartView(chart)
-        chartView.setRenderHint(QPainter.Antialiasing)
-
+        resultWindow.addItem(bargraph)
         layout = QHBoxLayout()
-        layout.addWidget(chartView)
+        layout.addWidget(resultWindow)
         resultDialog.setLayout(layout)
 
 
