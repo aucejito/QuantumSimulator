@@ -3,6 +3,7 @@ import numpy as np
 import Circuit as ct
 
 
+
 class Simulation():
 
     def simulate(circuit: ct.Circuit, shots: int):
@@ -15,19 +16,24 @@ class Simulation():
         matrix = Util.loadGateData('h')
         matrix = matrix.get("matrix")
         res: np.ndarray = np.matmul(matrix, circuit.initialState)
-        res.tolist()
+        res = res.tolist()
         density = []
         i = 0
         while i < len(res):
             density.append(res[i] / sum(res))
             i += 1
 
+    
+
         results = {
             "numQbits": "0",
+            "resMatrix": [],
             "prob": [],
+            "freq": []
         }
-
+        
         results["numQbits"] = ct.Circuit()
         results["prob"] = density
+        results["resMatrix"] = res
 
         return results

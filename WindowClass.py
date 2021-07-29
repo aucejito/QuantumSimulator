@@ -1,3 +1,4 @@
+import time
 from Util import Util
 from Simulation import Simulation as sim
 from GateGroupBox import GateGroupBox
@@ -14,9 +15,13 @@ from PyQt5.QtCore import *
 import gates as gt
 
 
+plot1 = None
+plot2 = None
+
 class Window(QMainWindow):
 
     imagePath = './images/'
+    
 
     def __init__(self):
         super().__init__()
@@ -76,7 +81,6 @@ class Window(QMainWindow):
         hbox1.addWidget(vboxGatesWdgt)
         vboxGatesLyt.addWidget(gatesGroupBox)
         gridGates = QGridLayout()
-
         deleteGates = QWidget()
         deleteGates.setAcceptDrops(True)
         deleteGates.setStyleSheet('background-color: rgba(255, 0, 0, 0.5)')
@@ -170,7 +174,7 @@ class Window(QMainWindow):
     def openGate(self, gate):
         gateDialog = QDialog()
         gateDialog.setModal(True)
-        gateDialog.setWindowTitle("Quantum Simulator")
+        gateDialog.setWindowTitle("Información de la puerta cuántica")
         gateDialog.setWindowIcon(QIcon("./images/icon.jpg"))
         gateDialog.setGeometry(500, 500, 300, 300)
 
@@ -181,7 +185,6 @@ class Window(QMainWindow):
     def loadGateInfoUI(self, dialog, gate):
         data = Util.loadGateData(gate) #Llamada a un método que nos devuelva la información de la puerta en un diccionario
         vBox = QVBoxLayout()
-        vBox.addWidget(QLabel("Información de la puerta cuántica"), alignment=Qt.AlignCenter)
         
         #vBox.setStretch(1,100)
         
@@ -209,27 +212,13 @@ class Window(QMainWindow):
     def startSimulation(self):
         matrices = self.getAllMatrices()
         #TODO Crear circuito y cálculo
-        '''
-        matrix = self.loadGateData('h').get("matrix")
-        # print(matrix)
-        
-        currentCircuit = Circuit()
-        currentCircuit.addGate(matrix)
-        currentCircuit.__init__
-
-        res : np.ndarray = np.matmul(matrix, currentCircuit.initialState)
-        res.tolist()
-        density = []
-        i = 0 
-        while i < len(res):
-            density.append(res[i] / sum(res))
-            i+=1
-
-        print(density)
-        '''
-        
+               
         currCircuit = Circuit()
+        start_time = time.time()
         results = sim.simulate(currCircuit, 5)
+        elapsed_time = time.time() - start_time
+        
+        print("Tiempo de ejecucion de la simulacion: %0.10f segundos." %elapsed_time)
         self.openResultDialog(results)
         
         
@@ -249,7 +238,7 @@ class Window(QMainWindow):
     def openResultDialog(self, results):
         resultDialog = QDialog()
         resultDialog.setModal(True)
-        resultDialog.setWindowTitle("Quantum Simulator")
+        resultDialog.setWindowTitle("Resultados de la simulación")
         resultDialog.setWindowIcon(QIcon("./images/icon.jpg"))
         resultDialog.setGeometry(500, 500, 800, 500)
 
@@ -258,9 +247,24 @@ class Window(QMainWindow):
         resultDialog.exec()
 
     def loadResultUI(self, resultDialog : QDialog, results):
-        
+        vLayout = QVBoxLayout()
         resultWindow = pg.plot()
-        resultWindow.getPlotItem().getAxis('bottom').setTicks([[(1,'one'),(2,'two')]])
+        resultWindow.setBackground('w')
+        resultWindow.setXRange(0,16, 0.05)
+        resultWindow.setYRange(0, 100, 0.05)
+        plot1 = resultWindow.getPlotItem()
+        plot1.showGrid(True, True)
+        
+        #Eje de la derecha
+
+        plot2 = pg.ViewBox()
+        plot1.showAxis('right')
+        plot1.scene().addItem(plot2)
+        plot1.getAxis('right').linkToView(plot2)
+        plot2.setXLink(plot1)
+        plot1.getAxis('right').setLabel('Frecuencia')
+    
+
         qbits = 2 #results.get('qbits')
         xAxis = []
         for i in range(pow(2,qbits)):
@@ -269,17 +273,37 @@ class Window(QMainWindow):
                 state = state.zfill(2)
             xAxis.append(state)
         xdict = dict(enumerate(xAxis))
-        resultWindow.getPlotItem().getAxis('bottom').setTicks([xdict.items()])
-        probabilities = [0,0, 0.5, 0.5]
+        plot1.getAxis('bottom').setTicks([xdict.items()])
+        #plot2.getAxis('bottom').setTicks([xdict.items()])
+        probabilities = [0,0, 50, 50]
         bargraph = pg.BarGraphItem(x=range(pow(2,qbits)), height = probabilities, width = 0.6, brush ='g')
+        bargraph2 = pg.BarGraphItem(x=range(pow(2,qbits)), height = [0,0,1,1], width = 0.6, brush = 'r')
+        plot1.addItem(bargraph)
+        plot2.addItem(bargraph2)
+        #updateViews()
+        #plot1.vb.sigResized.connect(updateViews)
+
+        vLayout.addWidget(QLabel("Vector de estados"))
+        for i in range(pow(2,qbits)):
+            stateStr = "" + str(xAxis[i]) + "    " + str(probabilities[i]) + "%" + "     " #+ str(results["resMatrix"])
+            probLabel = QLabel(stateStr)
+            vLayout.addWidget(probLabel)
         
-        resultWindow.addItem(bargraph)
-        layout = QHBoxLayout()
-        layout.addWidget(resultWindow)
-        resultDialog.setLayout(layout)
+        vLayout.setContentsMargins(5,5,5,5)
+        vLayout.addWidget(resultWindow)
+        resultDialog.setLayout(vLayout)
 
 
-
+def updateViews():
+    ## view has resized; update auxiliary views to match
+    global plot1, plot2
+    plot2.setGeometry(plot1.vb.sceneBoundingRect())
+    
+    ## need to re-update linked axes since this was called
+    ## incorrectly while views had different shapes.
+    ## (probably this should be handled in ViewBox.resizeEvent)
+    plot2.linkedViewChanged(plot1.vb, plot2.XAxis)
+    
 
 
 if __name__ == '__main__':
