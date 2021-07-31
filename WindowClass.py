@@ -1,4 +1,5 @@
 import time
+from trashWidget import trashWidget
 from Util import Util
 from Simulation import Simulation as sim
 from GateGroupBox import GateGroupBox
@@ -81,20 +82,7 @@ class Window(QMainWindow):
         hbox1.addWidget(vboxGatesWdgt)
         vboxGatesLyt.addWidget(gatesGroupBox)
         gridGates = QGridLayout()
-        deleteGates = QWidget()
-        deleteGates.setAcceptDrops(True)
-        deleteGates.setStyleSheet('background-color: rgba(255, 0, 0, 0.5)')
-        vBoxDelGates = QVBoxLayout()
-        vBoxDelGates.setAlignment(Qt.AlignCenter)
-        trashIcon = QLabel()
-        trashIcon.setStyleSheet('background-color: rgba(255, 0, 0, 0)')
-        trashIcon.setPixmap(QPixmap("./images/trash.png"))
-        trashIcon.setAlignment(Qt.AlignCenter)
-        trashIcon.setMaximumSize(60,60)
-        trashIcon.setScaledContents(True)
-        trashIcon.setAcceptDrops(True)
-        vBoxDelGates.addWidget(trashIcon)
-        deleteGates.setLayout(vBoxDelGates)
+        deleteGates = trashWidget()
         vboxGatesLyt.addWidget(deleteGates)
         gatesGroupBox.setLayout(gridGates)
         vboxGatesWdgt.setLayout(vboxGatesLyt)

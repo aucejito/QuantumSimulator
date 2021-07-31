@@ -1,3 +1,4 @@
+from numpy import append
 from Circuit import Circuit
 from QLabelClickable import QLabelClickable
 from PyQt5 import QtWidgets
@@ -30,7 +31,7 @@ class QbitLine(QFrame):
             event.acceptProposedAction()
 
     def dropEvent(self, event:QDropEvent):
-        pos = event.pos()
+        print(event.pos())
         event.acceptProposedAction()
         if event.mimeData().hasImage():
             newGate = QLabelClickable()
@@ -43,9 +44,27 @@ class QbitLine(QFrame):
             blank.setPixmap(QPixmap('./images/dashedsquare.png'))
             blank.setMaximumSize(50,50)
             blank.setScaledContents(True)
-            self.grid.addWidget(newGate, 0, self.currColumn)
-            #self.grid.addWidget(blank, 0, self.currColumn-1)
-            self.grid.addWidget(blank, 0, self.currColumn+1)
+            
+            index = 0
+            while event.pos().x() > self.grid.getItemPosition(index)[1]:
+                print(self.grid.getItemPosition(index)[2])
+                index += 1
+
+
+            itemsToMove = []
+            for i in range(index, self.grid.count()):
+                itemsToMove.append(self.grid.itemAtPosition(column=i))
+            
+            
+            self.grid.addWidget(newGate,0,index)
+            
+            for i in range(len(itemsToMove)):
+                self.grid.addWidget(itemsToMove[i])
+
+
+            self.grid.addWidget(newGate, 0, index)
+            self.grid.addWidget(blank, 0, index-1)
+            self.grid.addWidget(blank, 0, index+1)
             self.currColumn += 2
             currentCircuit = Circuit()
             currentCircuit.addGate(event.mimeData().data)
