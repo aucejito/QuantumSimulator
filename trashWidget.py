@@ -1,3 +1,4 @@
+from QLabelClickable import QLabelClickable
 from PyQt5 import QtWidgets
 from PyQt5 import QtGui
 from PyQt5.QtWidgets import *
@@ -5,6 +6,9 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 
 class trashWidget(QWidget):
+
+    deleted = pyqtSignal()
+    gateToDelete = None
 
     def __init__(self, *args, **kwargs):
         QWidget.__init__(self, *args, **kwargs)
@@ -31,6 +35,13 @@ class trashWidget(QWidget):
     def dropEvent(self, event:QDropEvent):
         print(event.pos())
         event.acceptProposedAction()
+        gateToDelete = event.source()
+        if(gateToDelete.qbit != -1):
+            gateToDelete.setPixmap(QPixmap('./images/dashedsquare.png'))
+        
+        self.deleted.emit()
+
+        
         # if event.mimeData().hasImage():
         #     newGate = QLabelClickable()
         #     newGate.setPixmap(QPixmap.fromImage(QImage(event.mimeData().imageData())))
