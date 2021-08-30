@@ -12,7 +12,7 @@ from Circuit import Circuit
 import pyqtgraph as pg
 import sys, csv
 import numpy as np
-from QLabelClickable import GateType, QLabelClickable
+from QLabelClickable import QLabelClickable
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
@@ -26,7 +26,7 @@ class Window(QMainWindow):
 
     imagePath = './images/'
     qbitCounter = 2
-    currentCircuit = Circuit()
+    currentCircuit = None
     qbitsList = []
     customGatesCounter = 0
     customGates = []
@@ -34,8 +34,8 @@ class Window(QMainWindow):
 
     def __init__(self):
         super().__init__()
+        self.currentCircuit = Circuit()
         self.initializeUI()
-        
         #deleteGates.deleted.connect(lambda:self.qbitCleanUp())
         
     def initializeUI(self):
@@ -77,29 +77,31 @@ class Window(QMainWindow):
         exportMenu.addAction(exportQASMAct)
         
     def file_save(self):
-        name = QFileDialog.getSaveFileName(self, 'Save File', filter="JSON files (*.json)")
+        # name = QFileDialog.getSaveFileName(self, 'Save File', filter="JSON files (*.json)")
 
-        saveDict = {
-            "columns":{
+        self.currentCircuit.make(self.qbitsList)
+
+        # saveDict = {
+        #     "columns":{
                 
-            },
-            "customGates":{}
-        }
+        #     },
+        #     "customGates":{}
+        # }
 
-        columnGates = [[]]
-        for qbit in self.qbitsList:
-            for j in range(qbit.grid.count()):
-                if(type(qbit.grid.itemAtPosition(0, j).widget()) == type(QLabel())):
-                    columnGates.append('None')
-                else:
-                    columnGates.append(qbit.grid.itemAtPosition(0, j).widget().gate)
-        print(columnGates)
-        saveDict['columns'] = columnGates
-        jsonString = json.dumps(saveDict)
+        # columnGates = [[]]
+        # for qbit in self.qbitsList:
+        #     for j in range(qbit.grid.count()):
+        #         if(type(qbit.grid.itemAtPosition(0, j).widget()) == type(QLabel())):
+        #             columnGates.append('None')
+        #         else:
+        #             columnGates.append(qbit.grid.itemAtPosition(0, j).widget().gate)
+        # print(columnGates)
+        # saveDict['columns'] = columnGates
+        # jsonString = json.dumps(saveDict)
 
-        file = open(str(name[0]), 'w')
-        file.write(jsonString)
-        file.close()
+        # file = open(str(name[0]), 'w')n
+        # file.write(jsonString)
+        # file.close()
 
     def file_load(self):
         name = QFileDialog.getOpenFileName(self,'Cargar Archivo')
@@ -179,10 +181,10 @@ class Window(QMainWindow):
         hbox1.addWidget(verticalLytWdgt2)
         hbox1.setStretch(0,1)
         hbox1.setStretch(1,5)
-        line1 = QbitLine()
+        line1 = QbitLine(self.currentCircuit)
         self.qbitsList.append(line1)
         line1.orderId = 0
-        line2 = QbitLine()
+        line2 = QbitLine(self.currentCircuit)
         self.qbitsList.append(line2)
         line2.orderId = 1
         vBox2.addWidget(line1)
@@ -202,7 +204,7 @@ class Window(QMainWindow):
     #     qbitToReorder.cleanQGrid()
 
     def addQbit(self, layout):
-        newQbitLine = QbitLine()
+        newQbitLine = QbitLine(self.currentCircuit)
         newQbitLine.setOrderId(self.qbitCounter)
         self.qbitCounter += 1
         layout.addWidget(newQbitLine)
@@ -280,13 +282,6 @@ class Window(QMainWindow):
         gateCX = self.generateGateLabel('CX')
         gateID = self.generateGateLabel('ID')
 
-        gateX.gateType = GateType('single')
-        gateY.gateType = GateType('single')
-        gateZ.gateType = GateType('single')
-        gateH.gateType = GateType('single')
-        gateCX.gateType = GateType('double')
-        gateID.gateType = GateType('single')
-        
         #Añadir puertas al grid
         grid.addWidget(gateX,1,1)
         grid.addWidget(gateY,1,2)
@@ -355,10 +350,10 @@ class Window(QMainWindow):
     def startSimulation(self):
         matrices = self.getAllMatrices()
         #TODO Crear circuito y cálculo
-               
-        currCircuit = Circuit()
+        self.currentCircuit.make(self.qbitsList)   
+        simul = sim()
         start_time = time.time()
-        results = sim.simulate(currCircuit, 5)
+        results = simul.simulate(self.currentCircuit, 5)
         elapsed_time = time.time() - start_time
         
         print("Tiempo de ejecucion de la simulacion: %0.10f segundos." %elapsed_time)

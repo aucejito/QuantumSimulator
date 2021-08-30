@@ -1,3 +1,4 @@
+from Qbit import Qbit
 from trashWidget import trashWidget
 from numpy import append
 from Circuit import Circuit
@@ -7,6 +8,7 @@ from PyQt5 import QtGui
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
+import copy
 
 blank = None
 
@@ -15,8 +17,9 @@ class QbitLine(QFrame):
     orderId = -1
     grid = QGridLayout()
     currColumn = 2
-    
-    def __init__(self, *args, **kwargs):
+    circuit = None
+
+    def __init__(self, circuit, *args, **kwargs):
         QFrame.__init__(self, *args, **kwargs)
         self.setFrameShape(QtWidgets.QFrame.HLine)
         ini_state = QLabel("|0⟩", self)
@@ -31,6 +34,10 @@ class QbitLine(QFrame):
         self.grid.addWidget(blank, 0, 2)
         self.grid.addWidget(blank, 0, 0)
         self.setAcceptDrops(True)
+        print(circuit)
+        self.circuit = circuit
+
+    
 
     def dragEnterEvent(self, event):
         if event.mimeData().hasImage():
@@ -44,7 +51,7 @@ class QbitLine(QFrame):
         print(event.pos())
         event.acceptProposedAction()
         if event.mimeData().hasImage():
-            newGate = QLabelClickable()
+            newGate = QLabelClickable(event.source().gate.id)
             newGate.qbit = self.orderId
             newGate.setPixmap(QPixmap.fromImage(QImage(event.mimeData().imageData())))
             newGate.setScaledContents(True)
@@ -118,7 +125,7 @@ class QbitLine(QFrame):
             print(type(blank) == type(QLabel))
             print(type(QLabel))
             print(type(newGate))
-
+            self.circuit.addGate(newGate.gate, newGate.position)
             # itemsToMove = []
             # print(index)
             # for i in range(index, self.grid.count()):
@@ -162,6 +169,8 @@ class QbitLine(QFrame):
     #             for k in range(i-1,len(itemsToMove)):
     #                 self.grid.addWidget(itemsToMove[k])
                     
-        
+        print(self.orderId)
         print(self.grid.count())
+
+        
             
