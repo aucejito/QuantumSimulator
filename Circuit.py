@@ -6,10 +6,15 @@ class Circuit():
     initialState = None
     states = []
     gates = []
-    
+    max = 0
+    qbits = {}
+    serialized = None
+    made = False
+    loaded = False
 
-    def __init__(self) -> None:
+    def __init__(self, loaded = False) -> None:
         self.initialState = np.array([1,0])
+        self.loaded = loaded
 
 
     def addGate(self, gate, position):
@@ -50,6 +55,45 @@ class Circuit():
                 num_gate += 1
             num_qbit += 1    
         print('Circuito: {}'.format(self.gates))
+
+        qbits = {}
+        for qbit in self.gates:
+            if len(qbit) > self.max:
+                self.max = len(qbit)
+        
+        for qbit in self.gates:
+            self.qbits[self.gates.index(qbit)] = 1
+            if len(qbit) < self.max:
+                list_to_add = []
+                for time in range(self.max+1 - len(qbit)):
+                    list_to_add.append(1)
+                qbit.extend(list_to_add)
+
+        transposed = list(map(list, zip(*self.gates)))
+        
+        print(transposed)
+
+        for list1 in transposed:
+            if 1 == len(list(dict.fromkeys(list1))):
+                transposed.remove(list1)
+
+        print("trasnposed !: ",transposed)
+        self.serialized = transposed
+
+        self.made = True
+
+
+    def save_circuit(self):
+        res = []
+        for col in self.serialized:
+            aux = []
+            for item in col:
+               aux.append(item.id) if item != 1 else aux.append(1)
+                    
+
+            res.append(aux)
+
+        self.saved_circuit = res
 #OPCIÓN QUIRK    
     # def save_circuit():
     #     if self.gates.count() < qbit:

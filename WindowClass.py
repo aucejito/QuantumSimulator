@@ -1,10 +1,13 @@
+import logging
+from QTextEditLogger import QTextEditLogger
+from QiskitRun import QiskitRun
 from Gate import Gate
 import json
 import time
 from PyQt5.sip import delete
 from trashWidget import trashWidget
 from Util import Util
-from Simulation import Simulation as sim
+from Simulation import Simulation1 as sim
 from GateGroupBox import GateGroupBox
 from PyQt5 import QtCore
 from QbitLine import QbitLine
@@ -17,6 +20,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 import gates as gt
+import ast
 
 
 plot1 = None
@@ -30,7 +34,6 @@ class Window(QMainWindow):
     qbitsList = []
     customGatesCounter = 0
     customGates = []
-    grid_col_counter = 0 
 
     def __init__(self):
         super().__init__()
@@ -71,22 +74,25 @@ class Window(QMainWindow):
         fileMenu.addSeparator()
         fileMenu.addAction(exitAct)
 
-        exportMenu = menuBar.addMenu('Exportar')
-        exportQASMAct = QAction('QASM', self)
-        #exportQASMAct.triggered.connect(self.exportToQASM)
-        exportMenu.addAction(exportQASMAct)
+        runMenu = menuBar.addMenu('Ejecutar')
+        runIBMAct = QAction('IBM', self)
+        runIBMAct.triggered.connect(lambda:self.runIBMCircuit())
+        runMenu.addAction(runIBMAct)
         
     def file_save(self):
-        # name = QFileDialog.getSaveFileName(self, 'Save File', filter="JSON files (*.json)")
+        name = QFileDialog.getSaveFileName(self, 'Save File', filter="JSON files (*.json)")
 
-        self.currentCircuit.make(self.qbitsList)
+        if self.currentCircuit.made == False:
+            self.currentCircuit.make(self.qbitsList)
 
-        # saveDict = {
-        #     "columns":{
+
+
+        saveDict = {
+            "circuit":{
                 
-        #     },
-        #     "customGates":{}
-        # }
+            },
+            "customGates":{}
+        }
 
         # columnGates = [[]]
         # for qbit in self.qbitsList:
@@ -96,24 +102,67 @@ class Window(QMainWindow):
         #         else:
         #             columnGates.append(qbit.grid.itemAtPosition(0, j).widget().gate)
         # print(columnGates)
-        # saveDict['columns'] = columnGates
-        # jsonString = json.dumps(saveDict)
+        self.currentCircuit.save_circuit()
+        saveDict['circuit'] = self.currentCircuit.saved_circuit
+        saveDict["numqbits"] =  self.qbitCounter
+        jsonString = json.dumps(saveDict)
 
-        # file = open(str(name[0]), 'w')n
-        # file.write(jsonString)
-        # file.close()
+        file = open(str(name[0]), 'w')
+        file.write(jsonString)
+        file.close()
 
     def file_load(self):
-        name = QFileDialog.getOpenFileName(self,'Cargar Archivo')
-        file = open(name, 'r')
+        name = QFileDialog.getOpenFileName(self,'Cargar Archivo', filter="JSON files (*.json)")
+        file = open(str(name[0]), 'r')
 
         with file:
             text = file.read()
 
+        print(text)
+        dictionary = ast.literal_eval(text)
+        qbits_loaded = dictionary["numqbits"]
+
+        self.new_circuit()
+        
+        
+        
+        for times in range(qbits_loaded-2):
+            self.addQbit(self.vBox2)
+
+        for line in self.qbitsList:
+            line.currColumn = 0
+            for i in reversed(range(line.grid.count())): 
+                line.grid.itemAt(i).widget().setParent(None)
+            print( "NUM ELEMS EN QBIT", line.grid.count())
+
+
+        
+
+        for column in dictionary["circuit"]: 
+            for item  in column:
+                    index = column.index(item)
+                    self.qbitsList[index].add_gate(item)
+                   
+
     def new_circuit(self):
         self.close()
+        self.qbitCounter = 0
+        self.qbitsList.clear()
+        self.currentCircuit = Circuit(True)
         self.__init__()
         
+    def runIBMCircuit(self):
+        self.currentCircuit.make(self.qbitsList)
+        run = QiskitRun()
+        run.create_circuit(self.currentCircuit)
+        
+
+        run.setup()
+        run.run_circuit()
+        print("results: ", run.get_results())
+        run.results_formatting()
+        self.openResultDialog(run.results)
+
 
 
     def setupUI(self):
@@ -175,27 +224,25 @@ class Window(QMainWindow):
 
         self.fillGridGates(gridGates)
 
-        vBox2 = QVBoxLayout()
+        self.vBox2 = QVBoxLayout()
         verticalLytWdgt2 = QWidget()
-        verticalLytWdgt2.setLayout(vBox2)
+        verticalLytWdgt2.setLayout(self.vBox2)
         hbox1.addWidget(verticalLytWdgt2)
         hbox1.setStretch(0,1)
         hbox1.setStretch(1,5)
-        line1 = QbitLine(self.currentCircuit)
-        self.qbitsList.append(line1)
-        line1.orderId = 0
-        line2 = QbitLine(self.currentCircuit)
-        self.qbitsList.append(line2)
-        line2.orderId = 1
-        vBox2.addWidget(line1)
-        vBox2.addWidget(line2)
+        self.line1 = QbitLine(self.currentCircuit,0)
+        self.qbitsList.append(self.line1)
+        self.line2 = QbitLine(self.currentCircuit,1)
+        self.qbitsList.append(self.line2)
+        self.vBox2.addWidget(self.line1)
+        self.vBox2.addWidget(self.line2)
         vBox1.setStretch(0,1)
         vBox1.setStretch(1,10)
     
         gatesTabWidget.addTab(gatesWidget, "Puertas")
         gatesTabWidget.addTab(customGatesWidget, "Personalizadas")
 
-        addQbitButton.clicked.connect(lambda:self.addQbit(vBox2))
+        addQbitButton.clicked.connect(lambda:self.addQbit(self.vBox2))
         customGateButton.clicked.connect(lambda:self.createGate())
 
     #TODO: Limpar qbit al borrar puerta de ese qbit
@@ -204,8 +251,8 @@ class Window(QMainWindow):
     #     qbitToReorder.cleanQGrid()
 
     def addQbit(self, layout):
-        newQbitLine = QbitLine(self.currentCircuit)
-        newQbitLine.setOrderId(self.qbitCounter)
+        newQbitLine = QbitLine(self.currentCircuit, self.qbitCounter)
+        #newQbitLine.setOrderId(self.qbitCounter)
         self.qbitCounter += 1
         layout.addWidget(newQbitLine)
         self.qbitsList.append(newQbitLine)
@@ -230,7 +277,7 @@ class Window(QMainWindow):
         gridInfo = QGridLayout()
         
         gridInfo.addWidget(QLabel("Nombre"),1,0)
-        gridInfo.addWidget(QLabel("Icono"),2,0)
+        gridInfo.addWidget(QLabel("Símbolo"),2,0)
         gridInfo.addWidget(QLabel("Matriz"),3,0)
 
         self.gateNameLE = QLineEdit()
@@ -279,7 +326,7 @@ class Window(QMainWindow):
         gateY = self.generateGateLabel('Y')
         gateZ = self.generateGateLabel('Z')
         gateH = self.generateGateLabel('H')
-        gateCX = self.generateGateLabel('CX')
+        gateC = self.generateGateLabel('C')
         gateID = self.generateGateLabel('ID')
 
         #Añadir puertas al grid
@@ -287,7 +334,7 @@ class Window(QMainWindow):
         grid.addWidget(gateY,1,2)
         grid.addWidget(gateZ,2,1)
         grid.addWidget(gateH,2,2)
-        grid.addWidget(gateCX,3,1)
+        grid.addWidget(gateC,3,1)
         grid.addWidget(gateID,3,2)
 
 
@@ -295,7 +342,7 @@ class Window(QMainWindow):
         gateY.clicked.connect(lambda:self.openGate('y'))
         gateZ.clicked.connect(lambda:self.openGate('z'))
         gateH.clicked.connect(lambda:self.openGate('h'))
-        gateCX.clicked.connect(lambda:self.openGate('cx'))
+        gateC.clicked.connect(lambda:self.openGate('c'))
         gateID.clicked.connect(lambda:self.openGate('id'))
 
     def generateGateLabel(self, gate):
@@ -348,9 +395,10 @@ class Window(QMainWindow):
         #vBox1.addWidget(QLabel(data.get("name"))) TODO de los datos obtenidos obtenemos el nombre, la matrix,etc
 
     def startSimulation(self):
-        matrices = self.getAllMatrices()
         #TODO Crear circuito y cálculo
-        self.currentCircuit.make(self.qbitsList)   
+
+        if self.currentCircuit.made == False:
+            self.currentCircuit.make(self.qbitsList)  
         simul = sim()
         start_time = time.time()
         results = simul.simulate(self.currentCircuit, 5)
@@ -385,25 +433,27 @@ class Window(QMainWindow):
         resultDialog.exec()
 
     def loadResultUI(self, resultDialog : QDialog, results):
+        qbits = results.get('numQbits')
         vLayout = QVBoxLayout()
         resultWindow = pg.plot()
         resultWindow.setBackground('w')
-        resultWindow.setXRange(0,16, 0.05)
+        resultWindow.setXRange(0,pow(2,qbits), 0.05)
         resultWindow.setYRange(0, 100, 0.05)
         plot1 = resultWindow.getPlotItem()
         plot1.showGrid(True, True)
-        
+        plot1.getAxis('left').setLabel('Porcentaje')
+        plot1.getAxis('bottom').setLabel('Estados')
         #Eje de la derecha
 
-        plot2 = pg.ViewBox()
-        plot1.showAxis('right')
-        plot1.scene().addItem(plot2)
-        plot1.getAxis('right').linkToView(plot2)
-        plot2.setXLink(plot1)
-        plot1.getAxis('right').setLabel('Frecuencia')
+        # plot2 = pg.ViewBox()
+        # plot1.showAxis('right')
+        # plot1.scene().addItem(plot2)
+        # plot1.getAxis('right').linkToView(plot2)
+        # plot2.setXLink(plot1)
+        # plot1.getAxis('right').setLabel('Frecuencia')
     
 
-        qbits = 2 #results.get('qbits')
+        
         xAxis = []
         for i in range(pow(2,qbits)):
             state = bin(i)[2:]
@@ -413,11 +463,11 @@ class Window(QMainWindow):
         xdict = dict(enumerate(xAxis))
         plot1.getAxis('bottom').setTicks([xdict.items()])
         #plot2.getAxis('bottom').setTicks([xdict.items()])
-        probabilities = [0,0, 50, 50]
+        probabilities = results.get('prob')
         bargraph = pg.BarGraphItem(x=range(pow(2,qbits)), height = probabilities, width = 0.6, brush ='g')
-        bargraph2 = pg.BarGraphItem(x=range(pow(2,qbits)), height = [0,0,1,1], width = 0.6, brush = 'r')
+        #bargraph2 = pg.BarGraphItem(x=range(pow(2,qbits)), height = [0,0,1,1], width = 0.6, brush = 'r')
         plot1.addItem(bargraph)
-        plot2.addItem(bargraph2)
+        #plot2.addItem(bargraph2)
         #updateViews()
         #plot1.vb.sigResized.connect(updateViews)
 
@@ -449,4 +499,5 @@ if __name__ == '__main__':
  window = Window()
  sys.exit(app.exec_())
 
+ 
  

@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 import copy
+from gates import gates
 
 blank = None
 
@@ -19,10 +20,11 @@ class QbitLine(QFrame):
     currColumn = 2
     circuit = None
 
-    def __init__(self, circuit, *args, **kwargs):
+    def __init__(self, circuit, order=-1, *args, **kwargs):
         QFrame.__init__(self, *args, **kwargs)
         self.setFrameShape(QtWidgets.QFrame.HLine)
-        ini_state = QLabel("|0⟩", self)
+        self.orderId = order
+        ini_state = QLabel("q" + str(self.orderId), self)
         ini_state.setFont(QFont('Arial',13))
         self.grid = QGridLayout(self)
         self.grid.setContentsMargins(0,0,0,0)
@@ -31,13 +33,15 @@ class QbitLine(QFrame):
         blank.setPixmap(QPixmap('./images/dashedsquare.png'))
         blank.setMaximumSize(50,50)
         blank.setScaledContents(True)
-        self.grid.addWidget(blank, 0, 2)
-        self.grid.addWidget(blank, 0, 0)
+        if(circuit.loaded == False):
+            self.add_blanks()
         self.setAcceptDrops(True)
         print(circuit)
         self.circuit = circuit
 
-    
+    def add_blanks(self):
+        self.grid.addWidget(blank, 0, 2)
+        self.grid.addWidget(blank, 0, 0)
 
     def dragEnterEvent(self, event):
         if event.mimeData().hasImage():
@@ -64,7 +68,9 @@ class QbitLine(QFrame):
             blank.setScaledContents(True)
             
             index = 0
-            while event.pos().x() > self.grid.itemAtPosition(0, index).widget().geometry().center().x():
+            new_gate = event.pos().x()
+
+            while new_gate > self.grid.itemAtPosition(0, index).widget().geometry().center().x():
                 print("{} > {} ??".format(event.pos().x(),self.grid.itemAtPosition(0, index).geometry().center().x()))
                 index += 1
                 if(self.grid.itemAtPosition(0, index) is None):
@@ -172,5 +178,23 @@ class QbitLine(QFrame):
         print(self.orderId)
         print(self.grid.count())
 
+    def add_gate(self, gate):
+        if gate == 1:
+            self.grid.addWidget(blank, 0, self.currColumn)
+        else:
+            new_gate = self.setup_gate(gate)
+            self.grid.addWidget(new_gate, 0, self.currColumn)
+            self.circuit.addGate(new_gate.gate, {"qbit":self.orderId, "column": self.currColumn})
+
+        self.currColumn +=1
         
-            
+    def setup_gate(self, gate):
+        newGate = QLabelClickable(gate)
+        # newGate.gate = Gate(gate)
+        newGate.qbit = self.orderId
+        pathImage = gates[gate]["symbol"]
+        newGate.setPixmap(QPixmap(pathImage))
+        newGate.setScaledContents(True)
+        newGate.setMaximumSize(50,50)
+        newGate.setAlignment(Qt.AlignCenter)
+        return newGate

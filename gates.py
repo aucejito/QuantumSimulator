@@ -25,11 +25,11 @@ gates = {
         "symbol":"./images/H.jpg",
         "matrix": 1/np.sqrt(2)*np.array([[1,1],[1,-1]])
     },
-    'cx': {
-        "id":"cx",
-        "name":"Controlled Not (CNOT/CX)",
-        "symbol":"./images/CX.jpg",
-        "matrix": np.array([[1,0,0,0],[0,1,0,0],[0,0,0,1],[0,0,1,0]])
+    'c': {
+        "id":"c",
+        "name":"Control",
+        "symbol":"./images/control.jpg",
+        "matrix": [[1,0,0,0],[0,1,0,0]]
     },
     'id': {
         "id":"id",

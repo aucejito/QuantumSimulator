@@ -1,1 +1,1 @@
-{"columns": [[], "None", "gate1", "None", "None"], "customGates": {}}
+{"circuit": [["x", "h"], [1, "x"]], "customGates": {}, "numqbits": 2}
