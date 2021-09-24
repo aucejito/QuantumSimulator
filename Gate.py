@@ -10,14 +10,15 @@ class Gate():
     matrix = None
     path_to_img = ''
 
-    def __init__(self, gate):
-        gate = gate.lower()
-        data = gates.get(gate)
-        self.id = data['id']
-        self.name = data['name']
-        self.symbol = data['name']
-        self.matrix = data['matrix']
-        self.path_to_img = None
+    def __init__(self, gate = None):
+        if gate != None:
+            gate = gate.lower()
+            data = gates.get(gate)
+            self.id = data['id']
+            self.name = data['name']
+            self.symbol = data['name']
+            self.matrix = data['matrix']
+            self.path_to_img = None
 
     def toJSON(self):
         return json.dumps(self, default=lambda o: o.__dict__, 

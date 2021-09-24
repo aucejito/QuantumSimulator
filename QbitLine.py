@@ -71,12 +71,10 @@ class QbitLine(QFrame):
             new_gate = event.pos().x()
 
             while new_gate > self.grid.itemAtPosition(0, index).widget().geometry().center().x():
-                print("{} > {} ??".format(event.pos().x(),self.grid.itemAtPosition(0, index).geometry().center().x()))
+                #print("{} > {} ??".format(event.pos().x(),self.grid.itemAtPosition(0, index).geometry().center().x()))
                 index += 1
                 if(self.grid.itemAtPosition(0, index) is None):
                     break
-
-            print('index {}'.format(index))
 
             if(index == 0 and self.grid.count() == 1):
                 index += 1
@@ -87,7 +85,6 @@ class QbitLine(QFrame):
             elif(index == 0):
                 itemsToMove = []
                 for i in range(self.grid.count()):
-                    print('i = {}'.format(i))
                     # if(self.grid.itemAtPosition(0, i) is None):
                     #     break
                     itemsToMove.append(self.grid.itemAtPosition(0,i).widget())
@@ -102,7 +99,7 @@ class QbitLine(QFrame):
             elif(index < self.grid.count()):
                 itemsToMove = []
                 for i in range(index, self.grid.count()):
-                    print('i = {}'.format(i))
+
                     # if(self.grid.itemAtPosition(0, i) is None):
                     #     break
                     itemsToMove.append(self.grid.itemAtPosition(0,i).widget())
@@ -126,11 +123,6 @@ class QbitLine(QFrame):
 
             newGate.position['qbit'] = self.orderId
                 
-            print(self.grid.itemAtPosition(0,0))
-
-            print(type(blank) == type(QLabel))
-            print(type(QLabel))
-            print(type(newGate))
             self.circuit.addGate(newGate.gate, newGate.position)
             # itemsToMove = []
             # print(index)

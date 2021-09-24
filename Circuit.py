@@ -71,13 +71,11 @@ class Circuit():
 
         transposed = list(map(list, zip(*self.gates)))
         
-        print(transposed)
 
         for list1 in transposed:
             if 1 == len(list(dict.fromkeys(list1))):
                 transposed.remove(list1)
 
-        print("trasnposed !: ",transposed)
         self.serialized = transposed
 
         self.made = True

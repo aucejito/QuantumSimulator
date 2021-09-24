@@ -44,7 +44,7 @@ class Window(QMainWindow):
     def initializeUI(self):
         self.setWindowTitle("Quantum Simulator")
         self.setWindowIcon(QIcon("./images/icon.jpg"))
-        self.setGeometry(500, 500, 1200, 700)
+        self.setGeometry(200, 200, 1200, 700)
         self.setupMenu()
         self.setupUI()
         self.show()
@@ -118,11 +118,10 @@ class Window(QMainWindow):
         with file:
             text = file.read()
 
-        print(text)
         dictionary = ast.literal_eval(text)
         qbits_loaded = dictionary["numqbits"]
 
-        self.new_circuit()
+        self.new_circuit(True)
         
         
         
@@ -139,20 +138,20 @@ class Window(QMainWindow):
         
 
         for column in dictionary["circuit"]: 
-            for item  in column:
-                    index = column.index(item)
-                    self.qbitsList[index].add_gate(item)
+            for item  in range(len(column)):
+                    self.qbitsList[item].add_gate(column[item])
                    
 
-    def new_circuit(self):
+    def new_circuit(self, loaded = False):
         self.close()
-        self.qbitCounter = 0
+        self.qbitCounter = 2
         self.qbitsList.clear()
-        self.currentCircuit = Circuit(True)
+        self.currentCircuit = Circuit(loaded)
         self.__init__()
         
     def runIBMCircuit(self):
-        self.currentCircuit.make(self.qbitsList)
+        if(self.currentCircuit.made == False):
+            self.currentCircuit.make(self.qbitsList)
         run = QiskitRun()
         run.create_circuit(self.currentCircuit)
         
@@ -305,12 +304,12 @@ class Window(QMainWindow):
     def saveGate(self):
 
         new_Gate = Gate()
-        new_Gate.id = self.customGatesCounter
+        new_Gate.id = self.gateSymbolLE.text().lower()
         new_Gate.name = self.gateNameLE.text()
         new_Gate.symbol = self.gateSymbolLE.text()
         new_Gate.matrix = np.array(self.gateMatrixTE.toPlainText())
         img_ful_path = Util.generateGateImage(new_Gate)
-        new_QLabel = QLabelClickable(new_Gate.symbol)
+        new_QLabel = QLabelClickable(new_Gate)
         new_QLabel.setPixmap(QPixmap(img_ful_path))
         
         if (len(self.customGates)%2 == 0):
@@ -320,6 +319,8 @@ class Window(QMainWindow):
         
         self.customGates.append(new_Gate)
         self.create_gate_dialog.close()
+
+        new_QLabel.clicked.connect(lambda:self.openGate(self.gateSymbolLE.text().lower()))
 
     def fillGridGates(self, grid):
         gateX = self.generateGateLabel('X')

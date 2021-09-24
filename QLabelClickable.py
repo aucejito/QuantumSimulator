@@ -21,7 +21,10 @@ class QLabelClickable(QLabel):
         self.setMaximumSize(50,50)
         self.setScaledContents(True)
         self.setAlignment(Qt.AlignCenter)
-        self.gate = Gate(gate)
+        if type(gate) == type(Gate('x')):
+            self.gate = gate
+        else:
+            self.gate = Gate(gate)
         
         
     def mouseReleaseEvent(self, event = None):

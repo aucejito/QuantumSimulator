@@ -142,11 +142,11 @@ class Simulation1():
                     else:
                         if control:
                             state = [circuit.qbits.get(cto[col-1].index(previous_gate)),circuit.qbits.get(cto[col].index(gate))]
-                            print("state: ", state)
+                            
                         
                             controlled_gate = np.append(np.array([[1,0,0,0],[0,1,0,0]]), np.pad(gate.matrix, ((0,0),(2,0)), 'constant'))
 
-                            print("controlled: ", controlled_gate)
+                            #print("controlled: ", controlled_gate)
                             #res = np.matmul(state, )
                         else:
                             matrix = gate.matrix
@@ -156,7 +156,6 @@ class Simulation1():
                         previous_gate = gate
                 initial_res += 1
         final_states = list(circuit.qbits.values())
-        print("Hola1: ", final_states)
 
         final_states_aux = []
         final_states.reverse()
@@ -165,8 +164,6 @@ class Simulation1():
                 final_states_aux.append(item)
 
         final_states_aux.reverse()
-
-        print("hola 2", final_states_aux)
 
         for sublist in final_states_aux:
             density = []
@@ -177,7 +174,6 @@ class Simulation1():
                     i+= 1
                 probs.append(density)
 
-        print("probs: ", probs)
         probabilities = []
 
         for item in self.lcomp(probs, len(probs)-1):
@@ -193,7 +189,7 @@ class Simulation1():
             "freq": []
         }
         
-        results["numQbits"] = 2 if len(probs) == 2 else int(math.sqrt(len(probs)))
+        results["numQbits"] = len(probs)
         results["prob"] = probabilities
         results["resMatrix"] = res
 

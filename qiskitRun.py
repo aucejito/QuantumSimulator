@@ -19,10 +19,10 @@ class QiskitRun():
         pass
    
     def setup(self):
-        # IBMQ.load_account()
-        # self.provider = IBMQ.get_provider(hub='ibm-q', group='open', project='main')
-        # self.real_device = self.provider.get_backend('ibmq_santiago')
-        pass
+        IBMQ.load_account()
+        self.provider = IBMQ.get_provider(hub='ibm-q', group='open', project='main')
+        self.real_device = self.provider.get_backend('ibmq_quito')
+        #pass
 
     def create_circuit(self, circuit : Circuit):
         print("serialized: ", circuit.serialized)
@@ -44,6 +44,8 @@ class QiskitRun():
                         self.qc.h(curr_qbit)
                     elif item.id == 'c':
                         self.qc.control(curr_qbit)
+                    elif item.id == 'id':
+                        self.qc.id(curr_qbit)
                 curr_qbit += 1 % self.qbits
         self.qc.measure_all() #Añadimos una medición al final de cada cúbit
         
@@ -52,11 +54,11 @@ class QiskitRun():
     
     
     def run_circuit(self):
-        aer_sim = Aer.get_backend('aer_simulator')
-        qobj = assemble(self.qc, shots=8192)
-        self.job = aer_sim.run(qobj)
-        # self.job = execute(self.qc, backend=self.real_device)
-        # self.job_info = job_monitor(self.job)
+        # aer_sim = Aer.get_backend('aer_simulator')
+        # qobj = assemble(self.qc, shots=8192)
+        # self.job = aer_sim.run(qobj)
+        self.job = execute(self.qc, backend=self.real_device)
+        self.job_info = job_monitor(self.job)
 
     def get_results(self):
         self.results = self.job.result()
